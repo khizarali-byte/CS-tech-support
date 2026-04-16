@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Agent {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  sessions     Session[]
+  bookings     CalendarBooking[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  email     String?
+  phone     String?
+  role      String
+  location  String?
+  timezone  String?  @default("Asia/Kolkata")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tickets   Ticket[]
+  sessions  Session[]
+}
+
+model Ticket {
+  id              String     @id @default(cuid())
+  ticketId        String     @unique
+  freshdeskId     Int?       @unique
+  source          String
+  subject         String
+  description     String?
+  status          String     @default("open")
+  priority        String?
+  freshdeskStatus Int?
+  userId          String?
+  user            User?      @relation(fields: [userId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  syncedAt        DateTime?
+  sessions        Session[]
+  recordings      Recording[]
+}
+
+model Session {
+  id                      String           @id @default(cuid())
+  sessionId               String           @unique
+  agentId                 String
+  agent                   Agent            @relation(fields: [agentId], references: [id])
+  ticketId                String
+  ticket                  Ticket           @relation(fields: [ticketId], references: [id])
+  userId                  String
+  user                    User             @relation(fields: [userId], references: [id])
+  ticketSource            String
+  userLocation            String?
+  userTimezone            String?          @default("Asia/Kolkata")
+  issueReported           String
+  status                  String           @default("open")
+  sessionType             String
+  sessionDate             DateTime?
+  sessionTimingUtc        String?
+  sessionTimingIst        String?
+  sessionTimingUser       String?
+  issueFoundDuringSession String?
+  rootCause               String?
+  resolution              String?
+  zoomRecordingUrl        String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  booking                 CalendarBooking?
+}
+
+model CalendarBooking {
+  id             String   @id @default(cuid())
+  bookingId      String   @unique
+  agentId        String
+  agent          Agent    @relation(fields: [agentId], references: [id])
+  sessionId      String?  @unique
+  session        Session? @relation(fields: [sessionId], references: [id])
+  title          String
+  startUtc       DateTime
+  endUtc         DateTime
+  notes          String?
+  status         String   @default("booked")
+  // Zoom details — stored at booking time from env config
+  zoomAccount    String?  // "account1" or "account2"
+  zoomMeetingId  String?
+  zoomPasscode   String?
+  zoomJoinUrl    String?
+  studentEmail   String?
+  studentName    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Recording {
+  id          String   @id @default(cuid())
+  recordingId String   @unique
+  ticketId    String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  url         String
+  title       String?
+  recordedAt  DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model SyncLog {
+  id             String   @id @default(cuid())
+  syncedAt       DateTime @default(now())
+  ticketsFetched Int
+  ticketsCreated Int
+  ticketsUpdated Int
+  errors         String?
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  agentId     String?
+  agentName   String
+  action      String   // CREATE | UPDATE | DELETE | LOGIN
+  entity      String   // ticket | session | recording | user
+  entityId    String?
+  entityLabel String?
+  detail      String?  // JSON string of what changed
+  createdAt   DateTime @default(now())
+}
+
+model LoginSession {
+  id        String   @id @default(cuid())
+  agentId   String
+  agentName String
+  loginAt   DateTime @default(now())
+  lastSeen  DateTime @default(now())
+}

@@ -15,6 +15,7 @@ export default defineConfig({
   },
   datasource: {
     url: isLocal ? dbUrl : 'file:./prisma/dev.db',
+    // @ts-expect-error adapter not yet in Prisma 7 defineConfig types
     adapter: isLocal ? undefined : () =>
       new PrismaLibSql({ url: dbUrl, authToken: process.env.TURSO_AUTH_TOKEN }),
   },

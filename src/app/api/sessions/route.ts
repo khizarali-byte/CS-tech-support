@@ -41,7 +41,8 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const sessionId = await generateSessionId()
-  const { agentId: _ignored, status: _status, ...rest } = body
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { agentId: _agentId, status: _status, ...rest } = body
 
   // ── Zoom auto-assignment ──────────────────────────────────────
   let assignedAccount: 'account1' | 'account2' | null = null

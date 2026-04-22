@@ -7,12 +7,19 @@ import { logActivity } from './activity'
 
 // Gmail addresses for each team member (set in .env.local)
 const TEAM_GMAIL: Record<string, string> = {
-  'Khizar Ali': process.env.AGENT_GMAIL_KHIZAR || '',
+  'Khizar Ali': process.env.AGENT_GMAIL_KHIZAR  || '',
   'Pradeep':    process.env.AGENT_GMAIL_PRADEEP || '',
   'Srijan':     process.env.AGENT_GMAIL_SRIJAN  || '',
   'Yashika':    process.env.AGENT_GMAIL_YASHIKA || '',
 }
-const ALLOWED_GMAILS = new Set(Object.values(TEAM_GMAIL).filter(Boolean))
+
+// Managers — allowed to log in and view but are not agents
+const MANAGER_GMAILS = [
+  process.env.AGENT_GMAIL_PRANJAL || '',
+  process.env.AGENT_GMAIL_DIVYA   || '',
+].filter(Boolean)
+
+const ALLOWED_GMAILS = new Set([...Object.values(TEAM_GMAIL), ...MANAGER_GMAILS].filter(Boolean))
 
 export const authOptions: NextAuthOptions = {
   providers: [

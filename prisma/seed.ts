@@ -10,10 +10,11 @@ const prisma = new PrismaClient({ adapter } as any)
 async function main() {
   const agents = [
     { name: 'Khizar Ali', email: 'khizar@support.com', password: 'Support@123' },
-    { name: 'Pradeep', email: 'pradeep@support.com', password: 'Support@123' },
-    { name: 'Srijan', email: 'srijan@support.com', password: 'Support@123' },
-    { name: 'Yashika', email: 'yashika@support.com', password: 'Support@123' },
+    { name: 'Pradeep',    email: 'pradeep@support.com', password: 'Support@123' },
+    { name: 'Srijan',     email: 'srijan@support.com', password: 'Support@123' },
+    { name: 'Yashika',    email: 'yashika@support.com', password: 'Support@123' },
   ]
+  // Note: Pranjal and Divya are managers — they log in via Google but are not agents
 
   for (const a of agents) {
     const passwordHash = await bcrypt.hash(a.password, 10)

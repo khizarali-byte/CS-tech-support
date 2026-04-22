@@ -108,13 +108,9 @@ export default function SessionDetailPage() {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="font-semibold text-gray-800 mb-4">Issue Details</h2>
             <dl className="space-y-3">
-              <div><dt className="text-xs text-gray-500">Issue Reported</dt><dd className="text-sm text-gray-800 mt-0.5">{session.issueReported}</dd></div>
+              {session.issueType && <div><dt className="text-xs text-gray-500">Issue Type</dt><dd className="text-sm text-gray-800 mt-0.5">{session.issueType.replace(/_/g, ' ')}</dd></div>}
               {editing ? (
                 <>
-                  <div>
-                    <dt className="text-xs text-gray-500 mb-1">Issue Found During Session</dt>
-                    <textarea name="issueFoundDuringSession" value={form.issueFoundDuringSession} onChange={handleChange} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" />
-                  </div>
                   <div>
                     <dt className="text-xs text-gray-500 mb-1">Root Cause</dt>
                     <textarea name="rootCause" value={form.rootCause} onChange={handleChange} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none" />
@@ -130,7 +126,6 @@ export default function SessionDetailPage() {
                 </>
               ) : (
                 <>
-                  {session.issueFoundDuringSession && <div><dt className="text-xs text-gray-500">Issue Found During Session</dt><dd className="text-sm text-gray-800 mt-0.5">{session.issueFoundDuringSession}</dd></div>}
                   {session.rootCause && <div><dt className="text-xs text-gray-500">Root Cause</dt><dd className="text-sm text-gray-800 mt-0.5">{session.rootCause}</dd></div>}
                   {session.resolution && <div><dt className="text-xs text-gray-500">Resolution</dt><dd className="text-sm text-gray-800 mt-0.5">{session.resolution}</dd></div>}
                   {session.zoomRecordingUrl && (
@@ -184,11 +179,11 @@ export default function SessionDetailPage() {
             <h3 className="font-semibold text-gray-800 mb-3">Session Info</h3>
             <dl className="space-y-2 text-sm">
               <div><dt className="text-gray-500">Type</dt><dd className="text-gray-800">{SESSION_TYPE_LABELS[session.sessionType] || session.sessionType}</dd></div>
-              <div><dt className="text-gray-500">Source</dt><dd className="text-gray-800">{session.ticketSource?.replace('_', ' ')}</dd></div>
               <div><dt className="text-gray-500">Agent</dt><dd className="text-gray-800">{session.agent?.name}</dd></div>
-              <div><dt className="text-gray-500">Ticket</dt><dd className="font-mono text-xs text-indigo-600">{session.ticket?.ticketId}</dd></div>
-              <div><dt className="text-gray-500">User</dt><dd className="font-mono text-xs text-indigo-600">{session.user?.userId}</dd></div>
-              {session.userLocation && <div><dt className="text-gray-500">Location</dt><dd className="text-gray-800">{session.userLocation}</dd></div>}
+              {session.studentId && <div><dt className="text-gray-500">Student ID</dt><dd className="font-mono text-xs text-indigo-600">{session.studentId}</dd></div>}
+              {session.studentName && <div><dt className="text-gray-500">Student Name</dt><dd className="text-gray-800">{session.studentName}</dd></div>}
+              {session.studentEmail && <div><dt className="text-gray-500">Student Email</dt><dd className="text-gray-800">{session.studentEmail}</dd></div>}
+              {session.duration && <div><dt className="text-gray-500">Duration</dt><dd className="text-gray-800">{session.duration} min</dd></div>}
               {session.sessionTimingIst && <div><dt className="text-gray-500">Timing (IST)</dt><dd className="text-gray-800">{session.sessionTimingIst}</dd></div>}
               {session.sessionTimingUser && <div><dt className="text-gray-500">Timing (User TZ)</dt><dd className="text-gray-800">{session.sessionTimingUser}</dd></div>}
             </dl>

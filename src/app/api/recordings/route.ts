@@ -17,10 +17,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  const { ticketId, ...rest } = await req.json()
   const recordingId = await generateRecordingId()
   const rec = await prisma.recording.create({
-    data: { recordingId, ...body },
+    data: { recordingId, ticketId: ticketId || null, ...rest },
     include: { ticket: true },
   })
   return NextResponse.json(rec, { status: 201 })

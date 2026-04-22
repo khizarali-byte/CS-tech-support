@@ -29,12 +29,9 @@ export default function LoginPage() {
   return (
     <div style={{
       display: 'flex', minHeight: '100vh',
-      background: '#080B14',
-      backgroundImage: `
-        linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px)
-      `,
-      backgroundSize: '40px 40px',
+      background: '#0D0D0D',
+      backgroundImage: 'radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)',
+      backgroundSize: '24px 24px',
     }}>
 
       {/* ── Left: Form ─────────────────────────────────── */}
@@ -46,13 +43,13 @@ export default function LoginPage() {
         padding: '64px 56px',
         position: 'relative',
         zIndex: 1,
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        borderRight: '1px solid rgba(255,255,255,0.07)',
       }}>
-        {/* Cyan glow blob */}
+        {/* Yellow glow blob */}
         <div style={{
           position: 'absolute', top: '-60px', left: '-60px',
           width: 280, height: 280, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,214,0,0.07) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -61,17 +58,17 @@ export default function LoginPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 13,
-              background: 'linear-gradient(135deg, #00D4FF 0%, #7C3AED 100%)',
+              background: '#FFD600',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 14, fontWeight: 800, color: '#000',
               letterSpacing: '-0.5px',
-              boxShadow: '0 0 20px rgba(0,212,255,0.35), 0 6px 20px rgba(0,0,0,0.4)',
-            }}>PT</div>
+              boxShadow: '0 0 20px rgba(255,214,0,0.3), 0 6px 20px rgba(0,0,0,0.4)',
+            }}>CM</div>
             <div>
-              <p style={{ fontSize: 13.5, fontWeight: 700, color: '#E2E8F0', letterSpacing: '-0.2px' }}>
-                Product &amp; Tech
+              <p style={{ fontSize: 13.5, fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.2px' }}>
+                Cuemath
               </p>
-              <p style={{ fontSize: 10.5, color: 'rgba(0,212,255,0.6)', fontWeight: 600, marginTop: 2, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <p style={{ fontSize: 10.5, color: 'rgba(255,214,0,0.7)', fontWeight: 600, marginTop: 2, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Support Portal
               </p>
             </div>
@@ -79,13 +76,13 @@ export default function LoginPage() {
 
           <h1 style={{
             fontSize: 36, fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.1,
-            background: 'linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%)',
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #A3A3A3 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             Welcome back.
           </h1>
           <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.35)', marginTop: 10, lineHeight: 1.6 }}>
-            Sign in to manage tickets, sessions and support.
+            Sign in to manage sessions, schedules and support.
           </p>
         </div>
 
@@ -107,7 +104,6 @@ export default function LoginPage() {
             width: '100%',
           }}
         >
-          {/* Google icon */}
           <svg width="18" height="18" viewBox="0 0 48 48">
             <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.6-8 19.6-20 0-1.3-.1-2.7-.4-4z"/>
             <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/>
@@ -128,7 +124,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label className="label-sm" style={{ display: 'block', marginBottom: 8 }}>Email Address</label>
-            <input name="email" type="email" required placeholder="agent@support.com" className="input-field" />
+            <input name="email" type="email" required placeholder="agent@cuemath.com" className="input-field" />
           </div>
           <div>
             <label className="label-sm" style={{ display: 'block', marginBottom: 8 }}>Password</label>
@@ -140,12 +136,12 @@ export default function LoginPage() {
             style={{
               marginTop: 4,
               padding: '13px 24px',
-              background: loading ? 'rgba(0,212,255,0.2)' : 'linear-gradient(135deg, #00D4FF 0%, #0891B2 100%)',
-              color: loading ? 'rgba(0,212,255,0.5)' : '#000',
+              background: loading ? 'rgba(255,214,0,0.2)' : '#FFD600',
+              color: loading ? 'rgba(255,214,0,0.5)' : '#000',
               border: 'none', borderRadius: 12,
               fontSize: 14, fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: loading ? 'none' : '0 0 24px rgba(0,212,255,0.4), 0 4px 20px rgba(0,0,0,0.3)',
+              boxShadow: loading ? 'none' : '0 0 24px rgba(255,214,0,0.3), 0 4px 20px rgba(0,0,0,0.3)',
               transition: 'all 0.2s ease', fontFamily: 'inherit',
             }}
           >
@@ -158,9 +154,9 @@ export default function LoginPage() {
           borderTop: '1px solid rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FF87', boxShadow: '0 0 6px rgba(0,255,135,0.6)', display: 'inline-block' }} />
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 6px rgba(34,197,94,0.6)', display: 'inline-block' }} />
           <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.2)', fontWeight: 500 }}>
-            Internal use only · Product &amp; Tech Support Team
+            Internal use only · Cuemath Support Team
           </p>
         </div>
       </div>
@@ -170,22 +166,19 @@ export default function LoginPage() {
         <div style={{
           position: 'absolute', top: '15%', right: '15%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,212,255,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,214,0,0.1) 0%, transparent 70%)',
           filter: 'blur(40px)', pointerEvents: 'none',
         }} />
         <div style={{
           position: 'absolute', bottom: '20%', left: '10%',
           width: 350, height: 350, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,140,0,0.08) 0%, transparent 70%)',
           filter: 'blur(40px)', pointerEvents: 'none',
         }} />
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
         }} />
         <div style={{
           position: 'absolute', inset: 0,
@@ -194,22 +187,22 @@ export default function LoginPage() {
         }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'rgba(0,255,135,0.08)', border: '1px solid rgba(0,255,135,0.2)',
+            background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
             borderRadius: 99, padding: '7px 16px', marginBottom: 36, width: 'fit-content',
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00FF87', boxShadow: '0 0 8px rgba(0,255,135,0.8)', display: 'inline-block' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#00FF87', letterSpacing: '0.08em' }}>LIVE SUPPORT ACTIVE</span>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px rgba(34,197,94,0.8)', display: 'inline-block' }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', letterSpacing: '0.08em' }}>LIVE SUPPORT ACTIVE</span>
           </div>
           <h2 style={{
             fontSize: 48, fontWeight: 800, letterSpacing: '-2.5px', lineHeight: 1.05,
             marginBottom: 20, maxWidth: 500,
-            background: 'linear-gradient(135deg, #E2E8F0 30%, rgba(0,212,255,0.8) 100%)',
+            background: 'linear-gradient(135deg, #FFFFFF 30%, rgba(255,214,0,0.9) 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
             Helping students<br />succeed, every hour.
           </h2>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.35)', lineHeight: 1.7, maxWidth: 400 }}>
-            Real-time ticket management, Zoom session scheduling, and multi-timezone support — all in one place.
+            Real-time session scheduling, Zoom management, and multi-timezone support — all in one place.
           </p>
 
           {/* Team avatars */}
@@ -219,7 +212,7 @@ export default function LoginPage() {
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
               {['Khizar', 'Pradeep', 'Srijan', 'Yashika'].map((name, i) => {
-                const colors = ['#00D4FF', '#7C3AED', '#00FF87', '#FFB800']
+                const colors = ['#FFD600', '#FF8C00', '#22C55E', '#F59E0B']
                 return (
                   <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                     <div style={{

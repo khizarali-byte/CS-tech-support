@@ -55,15 +55,20 @@ model Session {
   sessionId               String           @unique
   agentId                 String
   agent                   Agent            @relation(fields: [agentId], references: [id])
-  ticketId                String
-  ticket                  Ticket           @relation(fields: [ticketId], references: [id])
-  userId                  String
-  user                    User             @relation(fields: [userId], references: [id])
-  ticketSource            String
+  ticketId                String?
+  ticket                  Ticket?          @relation(fields: [ticketId], references: [id])
+  userId                  String?
+  user                    User?            @relation(fields: [userId], references: [id])
+  ticketSource            String?
   userLocation            String?
   userTimezone            String?          @default("Asia/Kolkata")
-  issueReported           String
-  status                  String           @default("open")
+  issueReported           String?
+  issueType               String?
+  studentId               String?
+  studentName             String?
+  studentEmail            String?
+  duration                Int?
+  status                  String           @default("scheduled")
   sessionType             String
   sessionDate             DateTime?
   sessionTimingUtc        String?
@@ -73,6 +78,8 @@ model Session {
   rootCause               String?
   resolution              String?
   zoomRecordingUrl        String?
+  issuePattern            String?
+  resolutionPattern       String?
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @updatedAt
   booking                 CalendarBooking?
@@ -104,8 +111,8 @@ model CalendarBooking {
 model Recording {
   id          String   @id @default(cuid())
   recordingId String   @unique
-  ticketId    String
-  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId    String?
+  ticket      Ticket?  @relation(fields: [ticketId], references: [id])
   url         String
   title       String?
   recordedAt  DateTime?

@@ -5,28 +5,28 @@ import toast from 'react-hot-toast'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
-type Recording = { id: string; recordingId: string; ticket?: { ticketId: string }; title?: string; url: string; notes?: string; createdAt: string }
+type Recording = { id: string; recordingId: string; title?: string; url: string; notes?: string; createdAt: string }
 
 export default function RecordingsPage() {
   const { data, isLoading, mutate } = useSWR('/api/recordings', fetcher)
   const [showAdd, setShowAdd] = useState(false)
   const [editRec, setEditRec] = useState<Recording | null>(null)
-  const [form, setForm] = useState({ ticketId: '', url: '', title: '', notes: '' })
+  const [form, setForm] = useState({ url: '', title: '', notes: '' })
   const [saving, setSaving] = useState(false)
 
   async function handleAdd() {
-    if (!form.ticketId || !form.url) { toast.error('Ticket ID and URL are required'); return }
+    if (!form.url) { toast.error('Recording URL is required'); return }
     setSaving(true)
     const res = await fetch('/api/recordings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ticketId: form.ticketId, url: form.url, title: form.title }),
+      body: JSON.stringify({ url: form.url, title: form.title }),
     })
     setSaving(false)
     if (!res.ok) { toast.error('Failed to add recording'); return }
     toast.success('Recording added')
     setShowAdd(false)
-    setForm({ ticketId: '', url: '', title: '', notes: '' })
+    setForm({ url: '', title: '', notes: '' })
     mutate()
   }
 
@@ -50,7 +50,7 @@ export default function RecordingsPage() {
   }
 
   function openEdit(r: Recording) {
-    setForm({ ticketId: '', url: r.url, title: r.title || '', notes: r.notes || '' })
+    setForm({ url: r.url, title: r.title || '', notes: r.notes || '' })
     setEditRec(r)
   }
 
@@ -76,16 +76,15 @@ export default function RecordingsPage() {
         ) : (
           <table className="data-table">
             <thead>
-              <tr>{['Recording ID', 'Ticket', 'Title', 'URL', 'Date', ''].map(h => <th key={h}>{h}</th>)}</tr>
+              <tr>{['Recording ID', 'Title', 'URL', 'Date', ''].map(h => <th key={h}>{h}</th>)}</tr>
             </thead>
             <tbody>
               {(!data || data.length === 0) && (
-                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.2)' }}>No recordings yet</td></tr>
+                <tr><td colSpan={5} style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.2)' }}>No recordings yet</td></tr>
               )}
               {data?.map((r: Recording) => (
                 <tr key={r.id} className="trow">
                   <td><span className="mono" style={{ fontWeight: 700 }}>{r.recordingId}</span></td>
-                  <td><span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11.5, color: '#A78BFA', fontWeight: 600 }}>{r.ticket?.ticketId}</span></td>
                   <td style={{ fontWeight: 500, color: '#E2E8F0' }}>{r.title || '—'}</td>
                   <td style={{ maxWidth: 260 }}>
                     <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#00D4FF', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}>
@@ -119,11 +118,7 @@ export default function RecordingsPage() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label className="label-sm" style={{ display: 'block', marginBottom: 7 }}>Ticket DB ID</label>
-                <input value={form.ticketId} onChange={e => setForm(p => ({ ...p, ticketId: e.target.value }))} placeholder="e.g. clr3x…" className="input-field" />
-              </div>
-              <div>
-                <label className="label-sm" style={{ display: 'block', marginBottom: 7 }}>Recording URL</label>
+                <label className="label-sm" style={{ display: 'block', marginBottom: 7 }}>Recording URL <span style={{ color: '#FF3D6A' }}>*</span></label>
                 <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} placeholder="https://drive.google.com/…" className="input-field" />
               </div>
               <div>

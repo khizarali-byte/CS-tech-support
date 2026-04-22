@@ -1,18 +1,10 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import useSWR from 'swr'
 import toast from 'react-hot-toast'
-import { LOCATIONS, WORLD_TIMEZONES, STATUS_DESCRIPTIONS, SESSION_TYPE_LABELS, IST_TIMEZONE } from '@/lib/constants'
+import { DateTime } from 'luxon'
+import { WORLD_TIMEZONES, SESSION_TYPE_LABELS, ISSUE_TYPES, SESSION_DURATIONS, IST_TIMEZONE } from '@/lib/constants'
 import { fromISTtoUTC } from '@/lib/timezone'
-
-const fetcher = (url: string) => fetch(url).then(r => r.json())
-
-const LOCATION_GROUPS = LOCATIONS.reduce<Record<string, typeof LOCATIONS>>((acc, loc) => {
-  if (!acc[loc.region]) acc[loc.region] = []
-  acc[loc.region].push(loc)
-  return acc
-}, {})
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -45,47 +37,21 @@ function Label({ children, required, hint }: { children: React.ReactNode; requir
 export default function NewSessionPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [ticketSearch, setTicketSearch] = useState('')
-  const [userSearch, setUserSearch] = useState('')
 
   const [form, setForm] = useState({
-    agentId:                 '',
-    ticketId:                '',
-    userId:                  '',
-    ticketSource:            'email_ticket',
-    userLocation:            '',
-    userTimezone:            'Asia/Kolkata',
-    issueReported:           '',
-    status:                  'open',
-    sessionType:             'live_class_support',
-    sessionDate:             '',
-    sessionTimingIst:        '',
-    issueFoundDuringSession: '',
-    rootCause:               '',
-    resolution:              '',
-    zoomRecordingUrl:        '',
+    sessionType:      'live_class_support',
+    sessionDate:      '',
+    sessionTimingIst: '',
+    duration:         '30',
+    userTimezone:     'Asia/Kolkata',
+    studentId:        '',
+    studentName:      '',
+    studentEmail:     '',
+    issueType:        '',
+    rootCause:        '',
+    resolution:       '',
+    zoomRecordingUrl: '',
   })
-
-  const { data: agents }     = useSWR<any[]>('/api/agents', fetcher)
-  const { data: ticketsData } = useSWR('/api/tickets?page=1&limit=200', fetcher)
-  const { data: usersData }   = useSWR('/api/users', fetcher)
-
-  const filteredTickets = useMemo(() => {
-    const all = ticketsData?.tickets || []
-    if (!ticketSearch) return all.slice(0, 50)
-    const q = ticketSearch.toLowerCase()
-    return all.filter((t: any) => t.ticketId?.toLowerCase().includes(q) || t.subject?.toLowerCase().includes(q)).slice(0, 30)
-  }, [ticketsData, ticketSearch])
-
-  const filteredUsers = useMemo(() => {
-    const all = usersData || []
-    if (!userSearch) return all.slice(0, 50)
-    const q = userSearch.toLowerCase()
-    return all.filter((u: any) => u.userId?.toLowerCase().includes(q) || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)).slice(0, 30)
-  }, [usersData, userSearch])
-
-  const selectedTicket = useMemo(() => ticketsData?.tickets?.find((t: any) => t.id === form.ticketId), [ticketsData, form.ticketId])
-  const selectedUser   = useMemo(() => usersData?.find((u: any) => u.id === form.userId), [usersData, form.userId])
 
   const timePreview = useMemo(() => {
     if (!form.sessionDate || !form.sessionTimingIst) return null
@@ -103,18 +69,17 @@ export default function NewSessionPage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  function handleLocationChange(locationStr: string) {
-    set('userLocation', locationStr)
-    const loc = LOCATIONS.find(l => `${l.city}, ${l.country}` === locationStr)
-    if (loc) set('userTimezone', loc.timezone)
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.agentId)             { toast.error('Please select an agent'); return }
-    if (!form.ticketId)            { toast.error('Please select a ticket'); return }
-    if (!form.userId)              { toast.error('Please select a user'); return }
-    if (!form.issueReported.trim()) { toast.error('Issue Reported is required'); return }
+    if (!form.sessionType)             { toast.error('Session Type is required'); return }
+    if (!form.sessionDate)             { toast.error('Session Date is required'); return }
+    if (!form.sessionTimingIst)        { toast.error('Session Time is required'); return }
+    if (!form.duration)                { toast.error('Duration is required'); return }
+    if (!form.studentId.trim())        { toast.error('Student ID is required'); return }
+    if (!form.studentName.trim())      { toast.error('Student Name is required'); return }
+    if (!form.studentEmail.trim())     { toast.error('Student Email is required'); return }
+    if (!form.issueType)               { toast.error('Issue Type is required'); return }
+
     setLoading(true)
 
     let sessionTimingUtc: string | undefined
@@ -129,20 +94,37 @@ export default function NewSessionPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...form,
-        sessionDate: form.sessionDate ? new Date(form.sessionDate).toISOString() : undefined,
+        sessionType:      form.sessionType,
+        sessionDate:      form.sessionDate ? new Date(form.sessionDate).toISOString() : undefined,
+        sessionTimingIst: form.sessionTimingIst,
         sessionTimingUtc,
         sessionTimingUser,
+        duration:         parseInt(form.duration),
+        userTimezone:     form.userTimezone,
+        studentId:        form.studentId,
+        studentName:      form.studentName,
+        studentEmail:     form.studentEmail,
+        issueType:        form.issueType,
+        rootCause:        form.rootCause || undefined,
+        resolution:       form.resolution || undefined,
+        zoomRecordingUrl: form.zoomRecordingUrl || undefined,
       }),
     })
 
     setLoading(false)
     if (res.ok) {
-      toast.success('Session created')
+      const data = await res.json()
+      const room = data.zoomAccount === 'account1' ? 'Zoom Room 1' : data.zoomAccount === 'account2' ? 'Zoom Room 2' : null
+      toast.success(room ? `Session created · assigned to ${room}` : 'Session created')
       router.push('/sessions')
     } else {
       const err = await res.json()
-      toast.error(err.message || 'Failed to create session')
+      if (res.status === 409 && err.nextFreeSlot) {
+        const hint = DateTime.fromISO(err.nextFreeSlot).setZone(IST_TIMEZONE).toFormat('dd MMM, hh:mm a') + ' IST'
+        toast.error(`Both Zoom rooms are booked. Next free slot: ${hint}`, { duration: 6000 })
+      } else {
+        toast.error(err.message || 'Failed to create session')
+      }
     }
   }
 
@@ -157,24 +139,15 @@ export default function NewSessionPage() {
         </button>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#E2E8F0' }}>New Session</h1>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>Fill in the details below to log a support session</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>Log a support session — under 30 seconds</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* ── 1. Assignment ── */}
-        <Section title="Assignment" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>}>
+        {/* ── 1. Session Details ── */}
+        <Section title="Session Details" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-            <div>
-              <Label required>Support Agent</Label>
-              <select className="input-field" value={form.agentId} onChange={e => set('agentId', e.target.value)}>
-                <option value="">Select agent…</option>
-                {agents?.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-            </div>
-
             <div>
               <Label required>Session Type</Label>
               <select className="input-field" value={form.sessionType} onChange={e => set('sessionType', e.target.value)}>
@@ -185,127 +158,21 @@ export default function NewSessionPage() {
             </div>
 
             <div>
-              <Label required>Ticket</Label>
-              <input
-                className="input-field"
-                placeholder="Search by ID or subject…"
-                value={ticketSearch}
-                onChange={e => setTicketSearch(e.target.value)}
-                style={{ marginBottom: 8 }}
-              />
-              <select
-                className="input-field"
-                value={form.ticketId}
-                onChange={e => set('ticketId', e.target.value)}
-                size={Math.min(filteredTickets.length + 1, 5)}
-                style={{ height: 'auto' }}
-              >
-                <option value="">— select ticket —</option>
-                {filteredTickets.map((t: any) => (
-                  <option key={t.id} value={t.id}>
-                    {t.ticketId} · {t.subject?.slice(0, 55)}{(t.subject?.length || 0) > 55 ? '…' : ''}
-                  </option>
+              <Label required>Duration (minutes)</Label>
+              <select className="input-field" value={form.duration} onChange={e => set('duration', e.target.value)}>
+                {SESSION_DURATIONS.map(d => (
+                  <option key={d} value={d}>{d} min</option>
                 ))}
               </select>
-              {selectedTicket && (
-                <div style={{ marginTop: 8, padding: '9px 13px', background: 'rgba(0,212,255,0.08)', borderRadius: 9, border: '1px solid rgba(0,212,255,0.2)' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#00D4FF' }}>{selectedTicket.ticketId}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(0,212,255,0.7)', marginTop: 2 }}>{selectedTicket.subject}</p>
-                </div>
-              )}
             </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <Label required>Ticket Source</Label>
-                <select className="input-field" value={form.ticketSource} onChange={e => set('ticketSource', e.target.value)}>
-                  <option value="email_ticket">Email Ticket</option>
-                  <option value="chat_ticket">Chat Ticket</option>
-                </select>
-              </div>
-              <div>
-                <Label required>Session Status</Label>
-                <select className="input-field" value={form.status} onChange={e => set('status', e.target.value)}>
-                  {Object.entries(STATUS_DESCRIPTIONS).map(([val, desc]) => (
-                    <option key={val} value={val}>{desc as string}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── 2. User Details ── */}
-        <Section title="User Details" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
             <div>
-              <Label required>User (Student / Teacher)</Label>
-              <input
-                className="input-field"
-                placeholder="Search by ID, name, email…"
-                value={userSearch}
-                onChange={e => setUserSearch(e.target.value)}
-                style={{ marginBottom: 8 }}
-              />
-              <select
-                className="input-field"
-                value={form.userId}
-                onChange={e => set('userId', e.target.value)}
-                size={Math.min(filteredUsers.length + 1, 5)}
-                style={{ height: 'auto' }}
-              >
-                <option value="">— select user —</option>
-                {filteredUsers.map((u: any) => (
-                  <option key={u.id} value={u.id}>
-                    {u.userId} · {u.name} {u.role === 'teacher' ? '(Teacher)' : '(Student/Parent)'}
-                  </option>
-                ))}
-              </select>
-              {selectedUser && (
-                <div style={{ marginTop: 8, padding: '9px 13px', background: 'rgba(0,255,135,0.07)', borderRadius: 9, border: '1px solid rgba(0,255,135,0.2)' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#00FF87' }}>{selectedUser.userId} · {selectedUser.role === 'teacher' ? 'Teacher' : 'Student/Parent'}</p>
-                  <p style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(0,255,135,0.8)', marginTop: 2 }}>{selectedUser.name}</p>
-                  {selectedUser.email && <p style={{ fontSize: 11, color: 'rgba(0,255,135,0.5)', marginTop: 2 }}>{selectedUser.email}</p>}
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <Label hint="Auto-fills the timezone below">User Location</Label>
-                <select className="input-field" value={form.userLocation} onChange={e => handleLocationChange(e.target.value)}>
-                  <option value="">Select city…</option>
-                  {Object.entries(LOCATION_GROUPS).map(([region, locs]) => (
-                    <optgroup key={region} label={`── ${region} ──`}>
-                      {locs.map(l => (
-                        <option key={`${l.city}-${l.country}`} value={`${l.city}, ${l.country}`}>
-                          {l.city}, {l.country}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label hint="Auto-filled from location — you can override">User Timezone</Label>
-                <select className="input-field" value={form.userTimezone} onChange={e => set('userTimezone', e.target.value)}>
-                  {WORLD_TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── 3. Scheduling ── */}
-        <Section title="Scheduling" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div>
-              <Label>Session Date</Label>
+              <Label required>Session Date</Label>
               <input type="date" className="input-field" value={form.sessionDate} onChange={e => set('sessionDate', e.target.value)} />
             </div>
+
             <div>
-              <Label>Session Time (IST, 24h format)</Label>
+              <Label required>Session Time (IST, 24h)</Label>
               <input type="time" className="input-field" value={form.sessionTimingIst} onChange={e => set('sessionTimingIst', e.target.value)} />
             </div>
           </div>
@@ -318,9 +185,9 @@ export default function NewSessionPage() {
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
             }}>
               {[
-                { label: 'IST (Team)',       value: timePreview.istTime  },
-                { label: 'UTC',              value: timePreview.utcTime  },
-                { label: 'User Local Time',  value: timePreview.userTime },
+                { label: 'IST (Team)',      value: timePreview.istTime  },
+                { label: 'UTC',             value: timePreview.utcTime  },
+                { label: 'User Local Time', value: timePreview.userTime },
               ].map(t => (
                 <div key={t.label}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{t.label}</p>
@@ -329,37 +196,63 @@ export default function NewSessionPage() {
               ))}
             </div>
           )}
+
+          <div style={{ marginTop: 16 }}>
+            <Label hint="Used for User Local Time preview above">Student Timezone</Label>
+            <select className="input-field" value={form.userTimezone} onChange={e => set('userTimezone', e.target.value)}>
+              {WORLD_TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
+            </select>
+          </div>
         </Section>
 
-        {/* ── 4. Issue Details ── */}
-        <Section title="Issue Details" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* ── 2. Student ── */}
+        <Section title="Student" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <Label required>Issue Reported by User</Label>
-              <textarea
+              <Label required>Student / Tutor ID</Label>
+              <input
                 className="input-field"
-                value={form.issueReported}
-                onChange={e => set('issueReported', e.target.value)}
-                rows={3}
-                style={{ resize: 'vertical', minHeight: 80 }}
-                placeholder="Describe the issue the user reported…"
+                value={form.studentId}
+                onChange={e => set('studentId', e.target.value)}
+                placeholder="e.g. STU-123456"
               />
             </div>
             <div>
-              <Label>Issue Found During Session</Label>
-              <textarea
+              <Label required>Student / Tutor Name</Label>
+              <input
                 className="input-field"
-                value={form.issueFoundDuringSession}
-                onChange={e => set('issueFoundDuringSession', e.target.value)}
-                rows={2}
-                style={{ resize: 'vertical' }}
-                placeholder="What did the agent find during the session?"
+                value={form.studentName}
+                onChange={e => set('studentName', e.target.value)}
+                placeholder="Full name"
+              />
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <Label required>Student / Tutor Email</Label>
+              <input
+                type="email"
+                className="input-field"
+                value={form.studentEmail}
+                onChange={e => set('studentEmail', e.target.value)}
+                placeholder="email@example.com"
               />
             </div>
           </div>
         </Section>
 
-        {/* ── 5. Resolution & Recording ── */}
+        {/* ── 3. Issue ── */}
+        <Section title="Issue" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>}>
+          <div>
+            <Label required>Issue Type</Label>
+            <select className="input-field" value={form.issueType} onChange={e => set('issueType', e.target.value)}>
+              <option value="">Select issue type…</option>
+              {Object.entries(ISSUE_TYPES).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+          </div>
+        </Section>
+
+        {/* ── 4. Resolution & Recording ── */}
         <Section title="Resolution & Recording" icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

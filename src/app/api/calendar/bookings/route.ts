@@ -7,13 +7,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const agentId = searchParams.get('agentId')
   const date    = searchParams.get('date')
+  const days    = parseInt(searchParams.get('days') || '7')
 
   const where: any = {}
   if (agentId) where.agentId = agentId
   if (date) {
     const d    = new Date(date)
     const next = new Date(d)
-    next.setDate(next.getDate() + 7)
+    next.setDate(next.getDate() + days)
     where.startUtc = { gte: d, lt: next }
   }
 

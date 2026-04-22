@@ -25,12 +25,12 @@ export default function SessionsPage() {
 
   function exportCSV() {
     if (!data?.sessions?.length) { toast.error('No sessions to export'); return }
-    const headers = ['Session ID','Agent','Ticket','User ID','Source','Location','Issue','Status','Type','Date (IST)','Timing (IST)','Issue Found','Root Cause','Resolution','Zoom URL']
-    const rows = data.sessions.map((s: Record<string, unknown> & { agent?: { name: string }; ticket?: { ticketId: string }; user?: { userId: string } }) => [
-      s.sessionId, s.agent?.name, s.ticket?.ticketId, s.user?.userId,
-      s.ticketSource, s.userLocation, s.issueReported, s.status, s.sessionType,
+    const headers = ['Session ID','Agent','Student ID','Student Name','Student Email','Issue Type','Status','Type','Date (IST)','Timing (IST)','Duration (min)','Root Cause','Resolution','Zoom URL']
+    const rows = data.sessions.map((s: Record<string, unknown> & { agent?: { name: string } }) => [
+      s.sessionId, s.agent?.name, s.studentId, s.studentName, s.studentEmail,
+      s.issueType, s.status, s.sessionType,
       s.sessionDate ? new Date(s.sessionDate as string).toLocaleDateString('en-IN') : '',
-      s.sessionTimingIst, s.issueFoundDuringSession, s.rootCause, s.resolution, s.zoomRecordingUrl,
+      s.sessionTimingIst, s.duration, s.rootCause, s.resolution, s.zoomRecordingUrl,
     ])
     const csv = [headers, ...rows].map(r => r.map((c: unknown) => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -75,12 +75,11 @@ export default function SessionsPage() {
             <button key={p} className={period === p ? 'active' : ''} onClick={() => { setPeriod(p); setPage(1) }}>{p}</button>
           ))}
         </div>
-        <select className="input-field" style={{ width: 150 }} value={status} onChange={e => setStatus(e.target.value)}>
+        <select className="input-field" style={{ width: 160 }} value={status} onChange={e => setStatus(e.target.value)}>
           <option value="">All Statuses</option>
-          <option value="open">Open</option>
-          <option value="woc">WOC</option>
-          <option value="woi">WOI</option>
-          <option value="closed">Closed</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="no_show">No Show</option>
         </select>
         <select className="input-field" style={{ width: 200 }} value={type} onChange={e => setType(e.target.value)}>
           <option value="">All Types</option>
@@ -103,41 +102,39 @@ export default function SessionsPage() {
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table" style={{ minWidth: 1100 }}>
               <thead>
-                <tr>{['Session ID','Agent','Ticket','User','Source','Status','Type','Date IST','Issue','Root Cause','Resolution','Recording',''].map(h => <th key={h}>{h}</th>)}</tr>
+                <tr>{['Session ID','Agent','Student','Issue Type','Status','Type','Date IST','Root Cause','Resolution','Recording',''].map(h => <th key={h}>{h}</th>)}</tr>
               </thead>
               <tbody>
                 {data?.sessions?.length === 0 && (
-                  <tr><td colSpan={13} style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.2)' }}>No sessions found</td></tr>
+                  <tr><td colSpan={11} style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.2)' }}>No sessions found</td></tr>
                 )}
                 {data?.sessions?.map((s: {
                   id: string; sessionId: string;
-                  agent?: { name: string }; ticket?: { ticketId: string }; user?: { userId: string };
-                  ticketSource: string; status: string; sessionType: string;
+                  agent?: { name: string };
+                  status: string; sessionType: string;
                   sessionDate?: string; sessionTimingIst?: string;
-                  issueReported: string; rootCause?: string; resolution?: string;
+                  studentId?: string; studentName?: string;
+                  issueType?: string; rootCause?: string; resolution?: string;
                   zoomRecordingUrl?: string;
                 }) => (
                   <tr key={s.id} className="trow">
                     <td><span className="mono" style={{ fontWeight: 700 }}>{s.sessionId}</span></td>
                     <td style={{ fontWeight: 500, color: '#E2E8F0' }}>{s.agent?.name}</td>
-                    <td><span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11.5, color: '#A78BFA', fontWeight: 600 }}>{s.ticket?.ticketId}</span></td>
-                    <td style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{s.user?.userId}</td>
                     <td>
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)',
-                        background: 'rgba(255,255,255,0.06)', padding: '3px 9px', borderRadius: 99,
-                        border: '1px solid rgba(255,255,255,0.08)',
-                      }}>{s.ticketSource?.replace('_',' ')}</span>
+                      <div style={{ fontSize: 12.5, color: '#E2E8F0', fontWeight: 500 }}>{s.studentName || '—'}</div>
+                      {s.studentId && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'ui-monospace, monospace' }}>{s.studentId}</div>}
+                    </td>
+                    <td>
+                      {s.issueType
+                        ? <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', padding: '3px 9px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.08)', whiteSpace: 'nowrap' }}>
+                            {s.issueType.replace(/_/g, ' ')}
+                          </span>
+                        : <span style={{ color: 'rgba(255,255,255,0.15)' }}>—</span>}
                     </td>
                     <td><StatusBadge status={s.status} /></td>
                     <td style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{SESSION_TYPE_LABELS[s.sessionType] || s.sessionType}</td>
                     <td style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: 'ui-monospace, monospace' }}>
                       {s.sessionTimingIst || (s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('en-IN') : '—')}
-                    </td>
-                    <td style={{ maxWidth: 140 }}>
-                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, color: '#E2E8F0' }}>
-                        {s.issueReported}
-                      </span>
                     </td>
                     <td style={{ maxWidth: 140 }}>
                       <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12.5, color: 'rgba(255,255,255,0.4)' }}>

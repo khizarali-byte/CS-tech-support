@@ -17,26 +17,21 @@ export async function GET(req: NextRequest) {
     start = new Date(now.getFullYear(), now.getMonth(), 1)
   }
 
-  const end = new Date()
-  end.setHours(23, 59, 59, 999)
-
-  const [openTickets, wocTickets, woiTickets, closedToday, todaysSessions, agentsWithCount, lastSync] =
-    await Promise.all([
-      prisma.ticket.count({ where: { status: 'open' } }),
-      prisma.ticket.count({ where: { status: 'woc' } }),
-      prisma.ticket.count({ where: { status: 'woi' } }),
-      prisma.ticket.count({ where: { status: 'closed', updatedAt: { gte: start } } }),
-      prisma.calendarBooking.count({ where: { startUtc: { gte: start }, status: 'booked' } }),
-      prisma.agent.findMany({
-        where: { email: { in: ['khizar@support.com','pradeep@support.com','srijan@support.com','yashika@support.com'] } },
-        include: { _count: { select: { sessions: true } } },
-      }),
-      prisma.syncLog.findFirst({ orderBy: { syncedAt: 'desc' } }),
-    ])
+  const [scheduled, completed, noShow, periodSessions, agentsWithCount] = await Promise.all([
+    prisma.session.count({ where: { status: 'scheduled', createdAt: { gte: start } } }),
+    prisma.session.count({ where: { status: 'completed', createdAt: { gte: start } } }),
+    prisma.session.count({ where: { status: 'no_show',   createdAt: { gte: start } } }),
+    prisma.session.count({ where: { createdAt: { gte: start } } }),
+    prisma.agent.findMany({
+      include: { _count: { select: { sessions: true } } },
+    }),
+  ])
 
   return NextResponse.json({
-    openTickets, wocTickets, woiTickets, closedToday, todaysSessions,
+    scheduled,
+    completed,
+    noShow,
+    periodSessions,
     agentWorkload: agentsWithCount.map((a) => ({ name: a.name, count: a._count.sessions })),
-    lastSync: lastSync?.syncedAt ?? null,
   })
 }

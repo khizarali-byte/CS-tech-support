@@ -10,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session) redirect('/login')
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#080B14', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', background: '#0D0D0D', overflow: 'hidden' }}>
       <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <TopBar agentName={session.user?.name || 'Agent'} />

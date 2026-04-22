@@ -41,6 +41,19 @@ export const STATUS_COLORS: Record<string, string> = {
 
 export const IST_TIMEZONE = 'Asia/Kolkata'
 
+export const ISSUE_TYPES: Record<string, string> = {
+  audio_video:       'Audio / Video Issues',
+  screen_sharing:    'Screen Sharing Issues',
+  login_access:      'Login / Access Issues',
+  app_browser_crash: 'App / Browser Crash',
+  whiteboard:        'Whiteboard Issues',
+  network:           'Network / Connectivity',
+  device_hardware:   'Device / Hardware',
+  other:             'Other',
+}
+
+export const SESSION_DURATIONS = [15, 30, 45, 60, 90] as const
+
 // ─── Agent names (display only — actual IDs fetched from DB) ────
 export const AGENT_NAMES = ['Khizar Ali', 'Pradeep', 'Srijan', 'Yashika'] as const
 

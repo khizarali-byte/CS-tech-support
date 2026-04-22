@@ -23,8 +23,8 @@ export function TopBar({ agentName }: { agentName: string }) {
 
   return (
     <header style={{
-      background: 'rgba(8,11,20,0.95)',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(10,10,10,0.95)',
+      borderBottom: '1px solid rgba(255,255,255,0.07)',
       height: 58,
       display: 'flex',
       alignItems: 'center',
@@ -36,12 +36,12 @@ export function TopBar({ agentName }: { agentName: string }) {
       zIndex: 10,
       position: 'relative',
     }}>
-      {/* Top border gradient */}
+      {/* Bottom border accent */}
       <div style={{
         position: 'absolute',
         bottom: 0, left: 0, right: 0,
         height: 1,
-        background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.15), rgba(124,58,237,0.15), transparent)',
+        background: 'linear-gradient(90deg, transparent, rgba(255,214,0,0.18), rgba(255,140,0,0.12), transparent)',
       }} />
 
       {/* Left: IST clock */}
@@ -49,11 +49,11 @@ export function TopBar({ agentName }: { agentName: string }) {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '7px 14px',
-          background: 'rgba(0,212,255,0.05)',
+          background: 'rgba(255,214,0,0.06)',
           borderRadius: 10,
-          border: '1px solid rgba(0,212,255,0.12)',
+          border: '1px solid rgba(255,214,0,0.14)',
         }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFD600" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
           </svg>
           <div>
@@ -61,14 +61,13 @@ export function TopBar({ agentName }: { agentName: string }) {
               fontFamily: 'ui-monospace, monospace',
               fontWeight: 700,
               fontSize: 13,
-              color: '#00D4FF',
+              color: '#FFD600',
               lineHeight: 1,
               letterSpacing: '0.05em',
-              textShadow: '0 0 10px rgba(0,212,255,0.5)',
             }}>
               {istTime}
             </p>
-            <p style={{ fontSize: 9.5, color: 'rgba(0,212,255,0.5)', fontWeight: 600, marginTop: 2, letterSpacing: '0.04em' }}>
+            <p style={{ fontSize: 9.5, color: 'rgba(255,214,0,0.5)', fontWeight: 600, marginTop: 2, letterSpacing: '0.04em' }}>
               {istDate} · IST
             </p>
           </div>
@@ -78,18 +77,18 @@ export function TopBar({ agentName }: { agentName: string }) {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '5px 12px',
-          background: 'rgba(0,255,135,0.06)',
-          border: '1px solid rgba(0,255,135,0.2)',
+          background: 'rgba(34,197,94,0.06)',
+          border: '1px solid rgba(34,197,94,0.2)',
           borderRadius: 99,
         }}>
           <span style={{
             width: 6, height: 6, borderRadius: '50%',
-            background: '#00FF87',
-            boxShadow: '0 0 8px rgba(0,255,135,0.8)',
+            background: '#22C55E',
+            boxShadow: '0 0 8px rgba(34,197,94,0.8)',
             display: 'inline-block',
             animation: 'pulse-ring 2s infinite',
           }} />
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#00FF87', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#22C55E', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             Live
           </span>
         </div>
@@ -97,21 +96,20 @@ export function TopBar({ agentName }: { agentName: string }) {
 
       {/* Right: agent + sign out */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        {/* Agent info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 34, height: 34, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #00D4FF 0%, #7C3AED 100%)',
+            background: '#FFD600',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 11, fontWeight: 800, color: '#000',
-            boxShadow: '0 0 14px rgba(0,212,255,0.3)',
+            boxShadow: '0 0 14px rgba(255,214,0,0.3)',
             letterSpacing: '0.03em', flexShrink: 0,
           }}>{initials}</div>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#E2E8F0', lineHeight: 1.2, letterSpacing: '-0.1px' }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2, letterSpacing: '-0.1px' }}>
               {agentName}
             </p>
-            <p style={{ fontSize: 10.5, color: 'rgba(0,212,255,0.6)', fontWeight: 600, marginTop: 1 }}>
+            <p style={{ fontSize: 10.5, color: 'rgba(255,214,0,0.6)', fontWeight: 600, marginTop: 1 }}>
               Support Agent
             </p>
           </div>
